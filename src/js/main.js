@@ -24,28 +24,6 @@ export function renderTable(tableContainer, table) {
   tableElement.appendChild(theadElement);
   tableElement.appendChild(tbodyElement);
 
-  // Add filter input for first name
-  const filterInput = document.createElement('input');
-  filterInput.placeholder = 'Filter by first name...';
-  filterInput.value = table.getState().globalFilter || '';
-  filterInput.oninput = (e) => {
-    table.setGlobalFilter(e.target.value);
-  };
-  tableContainer.appendChild(filterInput);
-
-  // Render table headers
-  table.getHeaderGroups().forEach((headerGroup) => {
-    const tr = document.createElement('tr');
-    headerGroup.headers.forEach((header) => {
-      const th = document.createElement('th');
-      th.innerHTML = header.isPlaceholder
-        ? ''
-        : flexRender(header.column.columnDef.header, header.getContext());
-      tr.appendChild(th);
-    });
-    theadElement.appendChild(tr);
-  });
-
   // Render table rows for the current page
   table.getRowModel().rows.forEach((row) => {
     const tr = document.createElement('tr');
@@ -113,7 +91,6 @@ export function renderTable(tableContainer, table) {
 
   // Clear previous content and append new content
   tableContainer.innerHTML = '';
-  tableContainer.appendChild(filterInput); // Add filter input
   tableContainer.appendChild(tableElement); // Add table
   tableContainer.appendChild(paginationElement); // Add pagination controls
   tableContainer.appendChild(pageInformationElement); // Add page information
@@ -225,6 +202,14 @@ const table = createVanillaTable({
     const value = row.getValue(columnId);
     return String(value).toLowerCase().includes(String(filterValue).toLowerCase());
   },
+});
+
+// get the filter input
+const filterInput = document.getElementById('name-filter');
+
+// Add event listener to the filter input
+filterInput.addEventListener('input', (e) => {
+  table.setGlobalFilter(e.target.value);
 });
 
 renderTable(tableContainer, table);
