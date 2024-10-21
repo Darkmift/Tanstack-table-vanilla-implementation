@@ -1,5 +1,12 @@
 import * as TableCore from 'https://cdn.jsdelivr.net/npm/@tanstack/table-core@8.20.5/+esm';
 import { faker } from 'https://esm.sh/@faker-js/faker';
+const {
+  createTable,
+  createColumnHelper,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getFilteredRowModel,
+} = TableCore;
 
 const flexRender = (comp, props) => {
   if (typeof comp === 'function') {
@@ -16,6 +23,15 @@ export function renderTable(tableContainer, table) {
 
   tableElement.appendChild(theadElement);
   tableElement.appendChild(tbodyElement);
+
+  // Add filter input for first name
+  const filterInput = document.createElement('input');
+  filterInput.placeholder = 'Filter by first name...';
+  filterInput.value = table.getState().globalFilter || '';
+  filterInput.oninput = (e) => {
+    table.setGlobalFilter(e.target.value);
+  };
+  tableContainer.appendChild(filterInput);
 
   // Render table headers
   table.getHeaderGroups().forEach((headerGroup) => {
@@ -86,10 +102,18 @@ export function renderTable(tableContainer, table) {
 
   // Table state
   const stateElement = document.createElement('pre');
-  stateElement.innerHTML = JSON.stringify(table.getState().pagination, null, 2);
+  stateElement.innerHTML = JSON.stringify(
+    {
+      pagination: table.getState().pagination,
+      globalFilter: table.getState().globalFilter,
+    },
+    null,
+    2
+  );
 
   // Clear previous content and append new content
   tableContainer.innerHTML = '';
+  tableContainer.appendChild(filterInput); // Add filter input
   tableContainer.appendChild(tableElement); // Add table
   tableContainer.appendChild(paginationElement); // Add pagination controls
   tableContainer.appendChild(pageInformationElement); // Add page information
@@ -128,8 +152,6 @@ export function makeData(...lens) {
 
   return makeDataLevel();
 }
-
-const { createTable, createColumnHelper, getCoreRowModel, getPaginationRowModel } = TableCore;
 
 export function createVanillaTable(options) {
   // Compose in the generic options to the user options
@@ -187,15 +209,21 @@ const table = createVanillaTable({
   columns,
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
+  getFilteredRowModel: getFilteredRowModel(),
   state: {
     columnPinning: {},
     pagination: {
       pageIndex: 0,
       pageSize: 5,
     },
+    globalFilter: '',
   },
   onStateChange: () => {
     renderTable(tableContainer, table);
+  },
+  globalFilterFn: (row, columnId, filterValue) => {
+    const value = row.getValue(columnId);
+    return String(value).toLowerCase().includes(String(filterValue).toLowerCase());
   },
 });
 
