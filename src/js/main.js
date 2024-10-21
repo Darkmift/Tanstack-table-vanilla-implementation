@@ -24,6 +24,17 @@ export function renderTable(tableContainer, table) {
   tableElement.appendChild(theadElement);
   tableElement.appendChild(tbodyElement);
 
+  // Render table headers
+  table.getHeaderGroups().forEach((headerGroup) => {
+    const tr = document.createElement('tr');
+    headerGroup.headers.forEach((header) => {
+      const th = document.createElement('th');
+      th.innerHTML = flexRender(header.column.columnDef.header, header.getContext());
+      tr.appendChild(th);
+    });
+    theadElement.appendChild(tr);
+  });
+
   // Render table rows for the current page
   table.getRowModel().rows.forEach((row) => {
     const tr = document.createElement('tr');
