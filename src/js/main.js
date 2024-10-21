@@ -6,6 +6,7 @@ const {
   getCoreRowModel,
   getPaginationRowModel,
   getFilteredRowModel,
+  getSortedRowModel 
 } = TableCore;
 
 const flexRender = (comp, props) => {
@@ -24,12 +25,27 @@ export function renderTable(tableContainer, table) {
   tableElement.appendChild(theadElement);
   tableElement.appendChild(tbodyElement);
 
-  // Render table headers
   table.getHeaderGroups().forEach((headerGroup) => {
     const tr = document.createElement('tr');
     headerGroup.headers.forEach((header) => {
       const th = document.createElement('th');
       th.innerHTML = flexRender(header.column.columnDef.header, header.getContext());
+  
+      // Check if the column has sorting enabled
+      if (header.column.getCanSort()) {
+        th.style.cursor = 'pointer'; // Make it clear that the column is sortable
+        th.onclick = () => {
+          // Toggle sorting
+          header.column.toggleSorting();
+        };
+  
+        // Show the sorting direction
+        const sortDirection = header.column.getIsSorted();
+        if (sortDirection) {
+          th.innerHTML += sortDirection === 'asc' ? ' 🔼' : ' 🔽'; // Add sort indicator
+        }
+      }
+  
       tr.appendChild(th);
     });
     theadElement.appendChild(tr);
@@ -168,10 +184,12 @@ const columnHelper = createColumnHelper();
 const columns = [
   columnHelper.accessor('firstName', {
     cell: (props) => props.getValue(),
+    enaableSorting: true,
   }),
   columnHelper.accessor('lastName', {
     header: '<span>Last Name</span>',
     cell: (props) => props.getValue(),
+    enaableSorting: true,
   }),
   columnHelper.accessor('age', {
     header: 'Age',
@@ -198,6 +216,7 @@ const table = createVanillaTable({
   getCoreRowModel: getCoreRowModel(),
   getPaginationRowModel: getPaginationRowModel(),
   getFilteredRowModel: getFilteredRowModel(),
+  getSortedRowModel: getSortedRowModel(),
   state: {
     columnPinning: {},
     pagination: {
